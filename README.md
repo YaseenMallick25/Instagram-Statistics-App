@@ -6,5 +6,4 @@
 
 <p align="center">
   <img src="InstaStats.v.10.gif" alt="animated" />
-  ![InstaStats.v.10 Demo](InstaStats.v.10.gif)
 </p>
