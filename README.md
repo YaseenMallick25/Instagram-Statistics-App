@@ -5,5 +5,6 @@
 ![Image](/InstaStatsWidget.v.1.0.png)
 
 <p align="center">
+  <img src="InstaStats.v.10.gif" alt="animated" />
   ![InstaStats.v.10 Demo](InstaStats.v.10.gif)
 </p>
