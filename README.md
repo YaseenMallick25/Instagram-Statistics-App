@@ -4,4 +4,4 @@
 
 ![Image](/InstaStatsWidget.v.1.0.png)
 
-![Farmers Market Finder Demo](InstaStats.v.10.gif)
+![InstaStats.v.10 Demo](InstaStats.v.10.gif)
