@@ -4,6 +4,6 @@
 
 ![Image](/InstaStatsWidget.v.1.0.png)
 
+<p align="center">
 ![InstaStats.v.10 Demo](InstaStats.v.10.gif)
-
-<img src="InstaStats.v.10.gif" width="1200" height="1500">
+</p>
