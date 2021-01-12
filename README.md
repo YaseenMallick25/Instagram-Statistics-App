@@ -6,4 +6,4 @@
 
 ![InstaStats.v.10 Demo](InstaStats.v.10.gif)
 
-<img src="InstaStats.v.10.gif" width="800" height="1500">
+<img src="InstaStats.v.10.gif" width="1000" height="1700">
