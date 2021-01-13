@@ -1,9 +1,6 @@
 # Instagram-Statistics-App
 
-![Image](/InstaStats.v.10.png)
+![Image](/InstaStats.v.10.1.png)
 
-![Image](/InstaStatsWidget.v.1.0.png)
+![Image](/InstaStatsWidget.v.1.0.1.png)
 
-<p align="center">
-  <img src="InstaStats.v.10.gif" alt="animated" />
-</p>
