@@ -51,6 +51,7 @@ struct ContentView: View {
                                 if StillFuckedUp() {
                                     self.fetcher.username = UserDefaults.standard.object(forKey: "username") as! String
                                     self.fetcher.load()
+                                    UpdateRefrences()
                                 } else {
                                     print("Can't Refresh")
                                 }
@@ -97,6 +98,7 @@ struct ContentView: View {
                                     if StillFuckedUp() {
                                         self.fetcher.username = UserDefaults.standard.object(forKey: "username") as! String
                                         self.fetcher.load()
+                                        UpdateRefrences()
                                     } else {
                                         print(" Can't Auto Refresh ")
                                     }
@@ -146,6 +148,7 @@ struct ContentView: View {
     }
     
     func UpdateFunc() {
+        
         print("Update App Data")
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5 ) {
@@ -229,6 +232,30 @@ struct InstaDataView: View {
                         .fontWeight(.semibold)
                         .foregroundColor(.black)
                         .shadow(color: Color(#colorLiteral(red: 0.6000000238, green: 0.6000000238, blue: 0.6000000238, alpha: 1)), radius: 10, x: -10, y: 10)
+                    
+                    HStack(spacing: 130) {
+                        
+                        HStack {
+                            Image(systemName: "arrowtriangle.up.fill")
+                                .foregroundColor(.green)
+                            
+                            Text(GetGains() as NSObject,formatter: NumberFormatter.format)
+                                .foregroundColor(.green)
+                            
+                        }
+                        
+                        HStack {
+                            
+                            Image(systemName: "arrowtriangle.down.fill")
+                                .foregroundColor(.red)
+                            
+                            Text(GetLoss() as NSObject,formatter: NumberFormatter.format)
+                                .foregroundColor(.red)
+                            
+                        }
+                        
+                    }.padding(3)
+                    
                 }
                 .padding(20)
                 .background(Color.white)
@@ -298,17 +325,27 @@ struct SearchUser: View {
     }
     
     func LoadData() {
+        
         UserDefaults.standard.set(self.username, forKey: "username")
         UserDefaults(suiteName: "group.InstaStats")!.set(self.username, forKey: "SharedUserName")
         UserDefaults.standard.synchronize()
+        
         self.fetcher.load()
+        
     }
     
     func waitfunc() {
         DispatchQueue.main.asyncAfter(deadline: .now() + 5 ) {
+            
+            SetRefrenceFollowerCount(Refrence_FollowerCount: self.fetcher.NewFollowerCount)
+            SetRefrenceDate()
+            
             self.wait = false
             finishedLoggedIn()
             self.LoggingStatus = true
+            
+            print(GetRefrenceFollowerCount())
+            
         }
     }
     
@@ -338,8 +375,12 @@ func LoggedOut() {
     UserDefaults.standard.set(profilepic, forKey: "ProfilePic")
     UserDefaults(suiteName: "group.InstaStats")!.set(profilepic, forKey: "SharedProfilePic")
     
+    SetRefrenceFollowerCount(Refrence_FollowerCount: 0)
+    
     UserDefaults.standard.set(false, forKey: "isLoggedIn")
+    
     UserDefaults.standard.synchronize()
+    
     
 }
 
@@ -372,6 +413,11 @@ public class InstaDataFetcher: ObservableObject {
     
     //let TestSharedURL = "https://run.mocky.io/v3/b5143afc-fb0b-4aa0-a542-616f1ae17b73"
     
+    //let TestSharedURL = "https://run.mocky.io/v3/117bf7b2-ff50-4f8d-8ac0-76b7e9410c12"
+    
+    //https://run.mocky.io/v3/117bf7b2-ff50-4f8d-8ac0-76b7e9410c12
+    //https://run.mocky.io/v3/b5143afc-fb0b-4aa0-a542-616f1ae17b73
+    
     func load() {
         
         guard let url = URL(string: BaseUrl + username + query) else {
@@ -379,10 +425,15 @@ public class InstaDataFetcher: ObservableObject {
             return
         }
         
+        //guard let url = URL(string: TestSharedURL) else {
+        //    print("Invalid URL")
+        //    return
+        //}
+        
         let SharedURL = BaseUrl + username + query
         
         UserDefaults(suiteName: "group.InstaStats")!.set(SharedURL, forKey: "SharedURL")
-        
+
         //UserDefaults(suiteName: "group.InstaStats")!.set(TestSharedURL, forKey: "TestSharedURL")
         
         WidgetCenter.shared.reloadAllTimelines()
@@ -397,11 +448,11 @@ public class InstaDataFetcher: ObservableObject {
                     
                     DispatchQueue.main.async {
                         
-                        print(instadata)
+                        //print(instadata)
                         self.data = instadata
                         
                         self.NewFollowerCount = instadata.graphql.user.edge_followed_by.count
-                        print(self.NewFollowerCount)
+                        //print(self.NewFollowerCount)
                         UserDefaults.standard.set(self.NewFollowerCount, forKey: "NewFollowerCount")
                         UserDefaults(suiteName: "group.InstaStats")!.set(self.NewFollowerCount, forKey: "SharedFollowerCount")
                         
@@ -468,7 +519,7 @@ struct FollowingData: Decodable {
 
 func YouFuckedUp() {
     let date = Date()
-    UserDefaults.standard.set(date, forKey: "LastRefreshed")
+    UserDefaults(suiteName: "group.InstaStats")!.set(date, forKey: "LastRefreshed")
     UserDefaults.standard.synchronize()
     print("You are now fucked up please wait 24 hours to get fucked up again")
 }
@@ -488,3 +539,62 @@ func StillFuckedUp() -> Bool {
     
 }
 
+func SetRefrenceFollowerCount(Refrence_FollowerCount: Int) {
+    UserDefaults(suiteName: "group.InstaStats")!.set(Refrence_FollowerCount, forKey: "RefrenceFollowerCount")
+    UserDefaults.standard.synchronize()
+}
+
+func SetRefrenceDate() {
+    let date = Date()
+    UserDefaults(suiteName: "group.InstaStats")!.set(date, forKey: "Last_Ref_Followers_Date")
+    UserDefaults.standard.synchronize()
+}
+
+func GetRefrenceFollowerCount() -> Int {
+    return UserDefaults(suiteName: "group.InstaStats")!.integer(forKey: "RefrenceFollowerCount")
+}
+
+func GetFollowerCount() -> Int {
+    return UserDefaults.standard.integer(forKey: "NewFollowerCount")
+}
+
+func GetGains() -> Int {
+    let NewFollowerCount = UserDefaults.standard.integer(forKey: "NewFollowerCount")
+    if NewFollowerCount - GetRefrenceFollowerCount() >= 0 {
+        return NewFollowerCount - GetRefrenceFollowerCount()
+    }
+    return 0
+}
+
+func GetLoss() -> Int {
+    let NewFollowerCount = UserDefaults.standard.integer(forKey: "NewFollowerCount")
+    if NewFollowerCount - GetRefrenceFollowerCount() <= 0 {
+        return NewFollowerCount - GetRefrenceFollowerCount()
+    }
+    return 0
+}
+
+func UpdateRefrenceFollowerCount(Updated_Followers: Int) {
+    SetRefrenceFollowerCount(Refrence_FollowerCount: Updated_Followers)
+}
+
+func Should_Update_Ref_Followers() -> Bool {
+    guard let lastRefFollowersDate = UserDefaults(suiteName: "group.InstaStats")!.object(forKey: "Last_Ref_Followers_Date") as? Date else {
+        return true
+    }
+
+    if let diff = Calendar.current.dateComponents([.hour], from: lastRefFollowersDate, to: Date()).hour, diff >= 24 {
+        print("Ref Date Updated")
+        return true
+    } else {
+        print("Ref Date is not updated")
+        return false
+    }
+}
+
+func UpdateRefrences() {
+    if Should_Update_Ref_Followers() {
+        SetRefrenceFollowerCount(Refrence_FollowerCount : GetFollowerCount())
+        SetRefrenceDate()
+    }
+}

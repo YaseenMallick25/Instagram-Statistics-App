@@ -71,8 +71,8 @@ struct Provider : TimelineProvider {
             
             // reloading data every 1 Hours...
             
-            let nextUpdate = Calendar.current.date(byAdding: .hour, value: 1, to: date)!
-            //.after(nextUpdate)
+            let nextUpdate = Calendar.current.date(byAdding: .second, value: 15, to: date)!
+
             let timeline = Timeline(entries: [data], policy: .after(nextUpdate))
             print("Test")
             
@@ -114,7 +114,7 @@ struct InstaStatsWidgetEntryView : View {
             Rectangle().frame(width: 153, height: 150).foregroundColor(.clear).background(Color(#colorLiteral(red: 0.7422684585, green: 0.7422684585, blue: 0.7422684585, alpha: 1))).cornerRadius(20).offset(x: 0, y: 100)
             
             VStack {
-                WebImage(url: URL(string: SharedProfilePic as? String ?? ""))
+                WebImage(url: URL(string: SharedProfilePic as? String ?? "N/A"))
                     .resizable()
                     .placeholder(Image(systemName: "person.crop.circle"))
                     .transition(.fade(duration: 0.5))
@@ -124,19 +124,44 @@ struct InstaStatsWidgetEntryView : View {
                     .shadow(color: Color(#colorLiteral(red: 0.2549019754, green: 0.2745098174, blue: 0.3019607961, alpha: 1)), radius: 5, x: -5, y: 5)
                     .offset(y:3)
                 
-                Text((SharedFullName as! String) )
+                Text((SharedFullName as? String ?? "N/A") )
                 
                 VStack {
                     Text("Followers")
-                        .font(.system(size: 12))
-                        .padding(.vertical,1)
+                        .font(.system(size: 9))
+                        .padding(.bottom,-5)
                         .foregroundColor(.gray)
                     
                     Text(SharedFollowerCount as NSObject,formatter: NumberFormatter.format)
-                        .font(.system(size: 20))
+                        .font(.system(size: 18))
                         .fontWeight(.semibold)
                         .foregroundColor(.black)
                         .shadow(color: Color(#colorLiteral(red: 0.6000000238, green: 0.6000000238, blue: 0.6000000238, alpha: 1)), radius: 5, x: -5, y: 5)
+                    
+                    HStack(spacing: 20) {
+                        HStack {
+                            Image(systemName: "arrowtriangle.up.fill")
+                                .font(.system(size: 8))
+                                .foregroundColor(.green)
+                            
+                            Text(GetGains() as NSObject,formatter: NumberFormatter.format)
+                                .font(.system(size: 12))
+                                .foregroundColor(.green)
+                            
+                        }
+                        
+                        HStack {
+                            Image(systemName: "arrowtriangle.down.fill")
+                                .font(.system(size: 8))
+                                .foregroundColor(.red)
+                            
+                            Text(GetLoss() as NSObject,formatter: NumberFormatter.format)
+                                .font(.system(size: 12))
+                                .foregroundColor(.red)
+                            
+                        }
+                        
+                    }
                     
                 }
                 .padding(.horizontal, 10)
@@ -179,7 +204,7 @@ func load(completion: @escaping (InstaData)-> ()) {
     
     let username = UserDefaults.standard.object(forKey: "FullName") as? String ?? ""
     
-    let sharedURL = UserDefaults(suiteName: "group.InstaStats")!.object(forKey: "SharedURL")
+    let sharedURL = UserDefaults(suiteName: "group.InstaStats")!.object(forKey: "TestSharedURL")
     print("This is from shared",sharedURL ?? "WTF")
     
     var FullName: String = ""
@@ -242,7 +267,7 @@ func load(completion: @escaping (InstaData)-> ()) {
 
 func YouFuckedUp() {
     let date = Date()
-    UserDefaults.standard.set(date, forKey: "LastRefreshed")
+    UserDefaults(suiteName: "group.InstaStats")!.set(date, forKey: "LastRefreshed")
     UserDefaults.standard.synchronize()
     print("You are now fucked up please wait 24 hours to get fucked up again")
 }
@@ -260,4 +285,64 @@ func StillFuckedUp() -> Bool {
         return false
     }
     
+}
+
+func SetRefrenceFollowerCount(Refrence_FollowerCount: Int) {
+    UserDefaults(suiteName: "group.InstaStats")!.set(Refrence_FollowerCount, forKey: "RefrenceFollowerCount")
+    UserDefaults.standard.synchronize()
+}
+
+func SetRefrenceDate() {
+    let date = Date()
+    UserDefaults(suiteName: "group.InstaStats")!.set(date, forKey: "Last_Ref_Followers_Date")
+    UserDefaults.standard.synchronize()
+}
+
+func GetRefrenceFollowerCount() -> Int {
+    return UserDefaults(suiteName: "group.InstaStats")!.integer(forKey: "RefrenceFollowerCount")
+}
+
+func GetFollowerCount() -> Int {
+    return UserDefaults.standard.integer(forKey: "NewFollowerCount")
+}
+
+func GetGains() -> Int {
+    let NewFollowerCount = UserDefaults.standard.integer(forKey: "NewFollowerCount")
+    if NewFollowerCount - GetRefrenceFollowerCount() >= 0 {
+        return NewFollowerCount - GetRefrenceFollowerCount()
+    }
+    return 0
+}
+
+func GetLoss() -> Int {
+    let NewFollowerCount = UserDefaults.standard.integer(forKey: "NewFollowerCount")
+    if NewFollowerCount - GetRefrenceFollowerCount() <= 0 {
+        return NewFollowerCount - GetRefrenceFollowerCount()
+    }
+    return 0
+}
+
+func UpdateRefrenceFollowerCount(Updated_Followers: Int) {
+    SetRefrenceFollowerCount(Refrence_FollowerCount: Updated_Followers)
+}
+
+func Should_Update_Ref_Followers() -> Bool {
+    guard let lastRefFollowersDate = UserDefaults(suiteName: "group.InstaStats")!.object(forKey: "Last_Ref_Followers_Date") as? Date else {
+        return true
+    }
+
+    if let diff = Calendar.current.dateComponents([.hour], from: lastRefFollowersDate, to: Date()).hour, diff >= 24 {
+        print("Ref Date Updated")
+        return true
+    } else {
+        print("Ref Date is not updated")
+        return false
+    }
+}
+
+func UpdateRefrences() {
+    if Should_Update_Ref_Followers() {
+        SetRefrenceFollowerCount(Refrence_FollowerCount : GetFollowerCount())
+        SetRefrenceDate()
+    }
 }
