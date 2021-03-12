@@ -22,7 +22,7 @@ struct ContentView: View {
             
             ZStack {
                 
-                Rectangle().frame(width: 388, height: 1500).foregroundColor(.clear).background(LinearGradient(gradient: Gradient(colors: [Color(#colorLiteral(red: 0.5725490451, green: 0.323955467, blue: 0.1386560305, alpha: 1)),Color(#colorLiteral(red: 0.8137346179, green: 0.2270152048, blue: 0.5532511853, alpha: 1)),Color(#colorLiteral(red: 0.3647058904, green: 0.06666667014, blue: 0.9686274529, alpha: 1)),Color(#colorLiteral(red: 0.1764705926, green: 0.01176470611, blue: 0.5607843399, alpha: 1))]), startPoint: .topLeading, endPoint: .bottomTrailing))
+                Rectangle().frame(width: 380, height: 1500).foregroundColor(.clear).background(LinearGradient(gradient: Gradient(colors: [Color(#colorLiteral(red: 0.5725490451, green: 0.323955467, blue: 0.1386560305, alpha: 1)),Color(#colorLiteral(red: 0.8137346179, green: 0.2270152048, blue: 0.5532511853, alpha: 1)),Color(#colorLiteral(red: 0.3647058904, green: 0.06666667014, blue: 0.9686274529, alpha: 1)),Color(#colorLiteral(red: 0.1764705926, green: 0.01176470611, blue: 0.5607843399, alpha: 1))]), startPoint: .topLeading, endPoint: .bottomTrailing))
                 
                 ScrollView(.vertical, showsIndicators: false, content: {
                     
@@ -48,25 +48,34 @@ struct ContentView: View {
                             
                             if refresh.startOffset == refresh.offset && refresh.started && !refresh.released {
                                 
-                                if StillFuckedUp() {
+                                if StillNotFuckedUp() && CanRefresh() {
+                                    
                                     self.fetcher.username = UserDefaults.standard.object(forKey: "username") as! String
                                     self.fetcher.load()
                                     UpdateRefrences()
+                                    AppendLogs()
+                                    print(GetLogs())
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 2.5 ) {
+                                        SetRefresh()
+                                    }
                                 } else {
                                     print("Can't Refresh")
                                 }
-
+                                
                                 UpdateFunc()
                                 
                                 let impactHeavy = UIImpactFeedbackGenerator(style: .heavy)
                                 impactHeavy.impactOccurred()
                                 
                                 withAnimation(Animation.linear) {
-                                    
                                     refresh.released = true
-                                    
                                 }
                                 
+                            }
+                            
+                            if refresh.startOffset == refresh.offset && refresh.started && refresh.released && refresh.invalid {
+                                refresh.invalid = false
+                                UpdateFunc()
                             }
                             
                         }
@@ -95,18 +104,20 @@ struct ContentView: View {
                         VStack {
                             InstaDataView(LoggingStatus: self.$LoggingStatus)
                                 .onAppear(perform: {
-                                    if StillFuckedUp() {
+                                    if StillNotFuckedUp() {
                                         self.fetcher.username = UserDefaults.standard.object(forKey: "username") as! String
                                         self.fetcher.load()
                                         UpdateRefrences()
+                                        DispatchQueue.main.asyncAfter(deadline: .now() + 2.5 ) {
+                                            SetRefresh()
+                                        }
                                     } else {
                                         print(" Can't Auto Refresh ")
                                     }
                                 })
-                            
                         }
                         
-                        if refresh.released && StillFuckedUp() {
+                        if refresh.released && StillNotFuckedUp() && CanRefresh() {
                             Text("  Account Refreshing...  ")
                                 .font(.headline)
                                 .padding(.vertical, 10)
@@ -116,7 +127,7 @@ struct ContentView: View {
                                 .offset(x: 0, y: 250)
                         }
                         
-                        if !StillFuckedUp() {
+                        if !StillNotFuckedUp() {
                             if refresh.released {
                                 VStack {
                                     Text(" You are now on Cooldown ")
@@ -124,6 +135,21 @@ struct ContentView: View {
                                     Text(" Please wait 24 hours to try Again ")
                                 }
                                 .padding(.vertical, 10)
+                                .foregroundColor(Color(#colorLiteral(red: 0.8609973575, green: 0.8609973575, blue: 0.8609973575, alpha: 1)))
+                                .background(Color(#colorLiteral(red: 0.6000000238, green: 0.6000000238, blue: 0.6000000238, alpha: 1)))
+                                .cornerRadius(10)
+                                .offset(x: 0, y: 250)
+                            }
+                        }
+                        
+                        if !CanRefresh() {
+                            if refresh.released {
+                                VStack {
+                                    Text("Hold on Dude! , Take a break ")
+                                        .font(.headline)
+                                    Text(" Please wait 30 Seconds")
+                                }
+                                .padding(.all, 10)
                                 .foregroundColor(Color(#colorLiteral(red: 0.8609973575, green: 0.8609973575, blue: 0.8609973575, alpha: 1)))
                                 .background(Color(#colorLiteral(red: 0.6000000238, green: 0.6000000238, blue: 0.6000000238, alpha: 1)))
                                 .cornerRadius(10)
@@ -149,13 +175,19 @@ struct ContentView: View {
     
     func UpdateFunc() {
         
-        print("Update App Data")
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5 ) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.5 ) {
             withAnimation(Animation.linear) {
-                refresh.released = false
-                refresh.started = false
+                
+                if refresh.startOffset == refresh.offset {
+                    refresh.released = false
+                    refresh.started = false
+                }
+                else{
+                    refresh.invalid = true
+                }
+  
             }
+            
         }
         
     }
@@ -165,6 +197,7 @@ struct ContentView: View {
         var offset: CGFloat = 0
         var started: Bool = false
         var released: Bool = false
+        var invalid: Bool = false
     }
 
 }
@@ -263,6 +296,9 @@ struct InstaDataView: View {
                 .clipped()
                 .shadow(color: Color(#colorLiteral(red: 0.2549019754, green: 0.2745098174, blue: 0.3019607961, alpha: 1)), radius: 25, x: -15, y: 15)
             
+                LogView()
+                    .offset(x: 0, y: -525)
+                
             }
             
             
@@ -307,6 +343,7 @@ struct SearchUser: View {
                     self.fetcher.username = self.username
                     self.wait.toggle()
                     LoadData()
+                    SetLogs()
                     waitfunc()
                     
                 }) {
@@ -338,6 +375,7 @@ struct SearchUser: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 5 ) {
             
             SetRefrenceFollowerCount(Refrence_FollowerCount: self.fetcher.NewFollowerCount)
+            SetLogRefrenceFollowerCount(Log_Refrence_FollowerCount: self.fetcher.NewFollowerCount)
             SetRefrenceDate()
             
             self.wait = false
@@ -411,30 +449,32 @@ public class InstaDataFetcher: ObservableObject {
     
     var query = "/?__a=1"
     
+    //let TestSharedURL = "https://run.mocky.io/v3/117bf7b2-ff50-4f8d-8ac0-76b7e9410c12"
+    
     //let TestSharedURL = "https://run.mocky.io/v3/b5143afc-fb0b-4aa0-a542-616f1ae17b73"
     
-    //let TestSharedURL = "https://run.mocky.io/v3/117bf7b2-ff50-4f8d-8ac0-76b7e9410c12"
+    let TestSharedURL = "https://api.mocki.io/v1/41395188"
     
     //https://run.mocky.io/v3/117bf7b2-ff50-4f8d-8ac0-76b7e9410c12
     //https://run.mocky.io/v3/b5143afc-fb0b-4aa0-a542-616f1ae17b73
     
     func load() {
         
-        guard let url = URL(string: BaseUrl + username + query) else {
-            print("Invalid URL")
-            return
-        }
-        
-        //guard let url = URL(string: TestSharedURL) else {
+        //guard let url = URL(string: BaseUrl + username + query) else {
         //    print("Invalid URL")
         //    return
         //}
         
-        let SharedURL = BaseUrl + username + query
+        guard let url = URL(string: TestSharedURL) else {
+            print("Invalid URL")
+            return
+        }
         
-        UserDefaults(suiteName: "group.InstaStats")!.set(SharedURL, forKey: "SharedURL")
+        //let SharedURL = BaseUrl + username + query
+        
+        //UserDefaults(suiteName: "group.InstaStats")!.set(SharedURL, forKey: "SharedURL")
 
-        //UserDefaults(suiteName: "group.InstaStats")!.set(TestSharedURL, forKey: "TestSharedURL")
+        UserDefaults(suiteName: "group.InstaStats")!.set(TestSharedURL, forKey: "TestSharedURL")
         
         WidgetCenter.shared.reloadAllTimelines()
         
@@ -524,7 +564,7 @@ func YouFuckedUp() {
     print("You are now fucked up please wait 24 hours to get fucked up again")
 }
 
-func StillFuckedUp() -> Bool {
+func StillNotFuckedUp() -> Bool {
     guard let lastRefreshDate = UserDefaults.standard.object(forKey: "LastRefreshed") as? Date else {
         return true
     }
@@ -561,7 +601,8 @@ func GetFollowerCount() -> Int {
 func GetGains() -> Int {
     let NewFollowerCount = UserDefaults.standard.integer(forKey: "NewFollowerCount")
     if NewFollowerCount - GetRefrenceFollowerCount() >= 0 {
-        return NewFollowerCount - GetRefrenceFollowerCount()
+        let Gain = NewFollowerCount - GetRefrenceFollowerCount()
+        return Gain
     }
     return 0
 }
@@ -569,14 +610,15 @@ func GetGains() -> Int {
 func GetLoss() -> Int {
     let NewFollowerCount = UserDefaults.standard.integer(forKey: "NewFollowerCount")
     if NewFollowerCount - GetRefrenceFollowerCount() <= 0 {
-        return NewFollowerCount - GetRefrenceFollowerCount()
+        let loss = NewFollowerCount - GetRefrenceFollowerCount()
+        return loss
     }
     return 0
 }
 
-func UpdateRefrenceFollowerCount(Updated_Followers: Int) {
-    SetRefrenceFollowerCount(Refrence_FollowerCount: Updated_Followers)
-}
+//func UpdateRefrenceFollowerCount(Updated_Followers: Int) {
+//    SetRefrenceFollowerCount(Refrence_FollowerCount: Updated_Followers)
+//}
 
 func Should_Update_Ref_Followers() -> Bool {
     guard let lastRefFollowersDate = UserDefaults(suiteName: "group.InstaStats")!.object(forKey: "Last_Ref_Followers_Date") as? Date else {
@@ -597,4 +639,78 @@ func UpdateRefrences() {
         SetRefrenceFollowerCount(Refrence_FollowerCount : GetFollowerCount())
         SetRefrenceDate()
     }
+}
+
+func CanRefresh() -> Bool {
+    guard let WaitForRefresh = UserDefaults(suiteName: "group.InstaStats")!.object(forKey: "WaitForRefresh") as? Date else {
+        return true
+    }
+
+    if let diff = Calendar.current.dateComponents([.second], from: WaitForRefresh, to: Date()).second, diff >= 5 {
+        print("You Can Refresh")
+        return true
+    } else {
+        print("Please wait 30 secs")
+        return false
+    }
+}
+
+func SetRefresh() {
+    let date = Date()
+    UserDefaults(suiteName: "group.InstaStats")!.set(date, forKey: "WaitForRefresh")
+    UserDefaults.standard.synchronize()
+    print("Refresh Date Set")
+}
+
+func SetLogs() {
+    let date = Date()
+    let logs = [LogsData(Date: date, Count: 0)]
+    UserDefaults(suiteName: "group.InstaStats")!.set(try? PropertyListEncoder().encode(logs), forKey: "Logs")
+    UserDefaults.standard.synchronize()
+}
+
+func GetLogs() -> [LogsData] {
+    let datalogs = UserDefaults(suiteName: "group.InstaStats")!.object(forKey: "Logs")
+    return try! PropertyListDecoder().decode(Array<LogsData>.self, from: datalogs as! Data)
+}
+
+struct LogsData: Codable {
+    var Date: Date
+    var Count: Int
+}
+
+func AppendLogs() {
+    
+    let date = Date()
+    let NewFollowerCount = UserDefaults.standard.integer(forKey: "NewFollowerCount")
+    let DiffCount = NewFollowerCount - GetLogRefrenceFollowerCount()
+    
+    var logs = GetLogs()
+    
+    let add: LogsData = LogsData(Date: date, Count: DiffCount)
+    
+    if DiffCount != 0 {
+        
+        logs.append(add)
+        
+        UserDefaults(suiteName: "group.InstaStats")!.set(try? PropertyListEncoder().encode(logs), forKey: "Logs")
+    }
+    
+    UpdateLogRefrences()
+    
+    UserDefaults.standard.synchronize()
+    
+}
+
+func SetLogRefrenceFollowerCount(Log_Refrence_FollowerCount: Int) {
+    UserDefaults(suiteName: "group.InstaStats")!.set(Log_Refrence_FollowerCount, forKey: "LogRefrenceFollowerCount")
+    UserDefaults.standard.synchronize()
+}
+
+func GetLogRefrenceFollowerCount() -> Int {
+    return UserDefaults(suiteName: "group.InstaStats")!.integer(forKey: "LogRefrenceFollowerCount")
+}
+
+func UpdateLogRefrences() {
+    SetLogRefrenceFollowerCount(Log_Refrence_FollowerCount : GetFollowerCount())
 }

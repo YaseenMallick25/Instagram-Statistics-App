@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		E05CF75C25B1DDC50049761B /* LogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E05CF75B25B1DDC50049761B /* LogView.swift */; };
 		E0BA1AF425A8C42B00AA7B03 /* InstaStatsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0BA1AF325A8C42B00AA7B03 /* InstaStatsApp.swift */; };
 		E0BA1AF625A8C42B00AA7B03 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0BA1AF525A8C42B00AA7B03 /* ContentView.swift */; };
 		E0BA1AF825A8C42C00AA7B03 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E0BA1AF725A8C42C00AA7B03 /* Assets.xcassets */; };
@@ -50,6 +51,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		E05CF75B25B1DDC50049761B /* LogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogView.swift; sourceTree = "<group>"; };
 		E0A1D8A225A9A621002E44C3 /* InstaStats.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = InstaStats.entitlements; sourceTree = "<group>"; };
 		E0A1D8A525A9A67A002E44C3 /* InstaStatsWidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = InstaStatsWidgetExtension.entitlements; sourceTree = "<group>"; };
 		E0BA1AF025A8C42B00AA7B03 /* InstaStats.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = InstaStats.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -118,6 +120,7 @@
 				E0A1D8A225A9A621002E44C3 /* InstaStats.entitlements */,
 				E0BA1AF325A8C42B00AA7B03 /* InstaStatsApp.swift */,
 				E0BA1AF525A8C42B00AA7B03 /* ContentView.swift */,
+				E05CF75B25B1DDC50049761B /* LogView.swift */,
 				E0BA1AF725A8C42C00AA7B03 /* Assets.xcassets */,
 				E0BA1AFC25A8C42C00AA7B03 /* Info.plist */,
 				E0BA1AF925A8C42C00AA7B03 /* Preview Content */,
@@ -267,6 +270,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				E0BA1B1925A8C55300AA7B03 /* InstaStatsWidget.intentdefinition in Sources */,
+				E05CF75C25B1DDC50049761B /* LogView.swift in Sources */,
 				E0BA1AF625A8C42B00AA7B03 /* ContentView.swift in Sources */,
 				E0BA1AF425A8C42B00AA7B03 /* InstaStatsApp.swift in Sources */,
 			);
