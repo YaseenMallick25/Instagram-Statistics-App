@@ -8,9 +8,10 @@ The app shows live followers of instagram account and displays the followers in 
 It also keep a track for Daily Followers Count, Daily Gains and Losses and displays that to #user in a informative yet minimalist way. Simple pull to Pull to Refresh is implemented for refreshing the app manually.
 
 #
-![Image](/InstaStats.png)
+![Image](/InstaStats_HomeView.png)
+![Image](/InstaStats_LogView.png)
 #
 
 # The Widget is simple plain in design and only shows 
 
-![Image](/InstaStats_widget.png)
+
